@@ -1,6 +1,6 @@
 {
-  "name": "maven-repo-mcp",
-  "version": "1.0.0",
+  "name": "maven-artifacts-mcp",
+  "version": "0.1.0",
   "description": "MCP Server for resolving Maven2 module versions with caching and logging",
   "main": "dist/index.js",
   "type": "module",

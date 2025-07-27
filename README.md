@@ -42,7 +42,7 @@ Add to your mcp json
     "mcpServers": {
       "maven-resolver": {
         "command": "npx",
-        "args": ["maven-repo-mcp"],
+        "args": ["maven-artifacts-mcp"],
         "env": {
           "CACHE_TTL_MINUTES": "5",
           "MAVEN_API_TIMEOUT": "10000"
