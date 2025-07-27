@@ -53,6 +53,16 @@ Add to your mcp json
 }
 ```
 
+Other environment variables like 
+
+        "HTTPS_PROXY": "http://myorg.proxy:8080",
+        "HTTP_PROXY": "http://myorg.proxy:8080",
+        "NO_PROXY": "localhost,127.0.0.1,.local"
+        "LOG_LEVEL": "debug",
+        "NODE_ENV": "development"       
+
+can also be provided.
+
 ## MCP Tool: `latest_version`
 
 Retrieves the latest version information for a Maven artifact.
