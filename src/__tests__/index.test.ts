@@ -268,4 +268,44 @@ describe('MCP Server Input Validation', () => {
       await expect(mavenResolver.getLatestVersion(request)).rejects.toThrow('Maven API timeout');
     });
   });
+
+  describe('Tools Endpoint', () => {
+    it('should return tools information in expected format', () => {
+      const expectedStructure = {
+        service: 'maven-mcp-server',
+        version: '1.0.0',
+        tools: [
+          {
+            name: 'latest_version',
+            description: 'Get the latest stable version of a Maven artifact',
+            parameters: {
+              groupId: 'Maven group ID (e.g., "org.springframework")',
+              artifactId: 'Maven artifact ID (e.g., "spring-core")'
+            },
+            example: {
+              groupId: 'com.fasterxml.jackson.core',
+              artifactId: 'jackson-databind'
+            }
+          }
+        ],
+        features: [
+          'Filters out pre-release versions (RC, preview, alpha, beta, snapshot)',
+          'In-memory caching with 5-minute TTL',
+          'Detailed logging of all requests and responses',
+          'Semantic version comparison for accurate latest detection'
+        ],
+        endpoints: {
+          health: '/health',
+          sse: '/sse',
+          tools: '/tools'
+        }
+      };
+
+      expect(expectedStructure.service).toBe('maven-mcp-server');
+      expect(expectedStructure.tools).toHaveLength(1);
+      expect(expectedStructure.tools[0]?.name).toBe('latest_version');
+      expect(expectedStructure.endpoints.tools).toBe('/tools');
+      expect(expectedStructure.features).toContain('Filters out pre-release versions (RC, preview, alpha, beta, snapshot)');
+    });
+  });
 }); 

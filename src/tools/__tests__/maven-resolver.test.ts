@@ -1,9 +1,16 @@
-import axios from 'axios';
 import { MavenResolver } from '../maven-resolver.js';
 import { MavenApiResponse } from '../../types/maven.js';
+import { httpClient } from '../../http/http-client.js';
 
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+jest.mock('../../http/http-client.js');
+const mockedHttpClient = httpClient as jest.Mocked<typeof httpClient>;
+
+// Helper function to create mock HTTP responses
+const createMockHttpResponse = (data: any) => ({
+  data,
+  status: 200,
+  headers: { 'content-type': 'application/json' }
+});
 
 jest.mock('../../logging/logger.js', () => ({
   logger: {
@@ -73,7 +80,7 @@ describe('MavenResolver', () => {
         }
       };
 
-      mockedAxios.get.mockResolvedValueOnce({ data: mockResponse });
+      mockedHttpClient.get.mockResolvedValueOnce(createMockHttpResponse(mockResponse));
 
       const result = await resolver.getLatestVersion({
         groupId: 'org.springframework',
@@ -106,7 +113,7 @@ describe('MavenResolver', () => {
         }
       };
 
-      mockedAxios.get.mockResolvedValueOnce({ data: mockResponse });
+      mockedHttpClient.get.mockResolvedValueOnce(createMockHttpResponse(mockResponse));
 
       const result = await resolver.getLatestVersion({
         groupId: 'org.springframework',
@@ -154,9 +161,9 @@ describe('MavenResolver', () => {
         }
       };
 
-      mockedAxios.get
-        .mockResolvedValueOnce({ data: mockMainResponse })
-        .mockResolvedValueOnce({ data: mockVersionsResponse });
+      mockedHttpClient.get
+        .mockResolvedValueOnce(createMockHttpResponse(mockMainResponse))
+        .mockResolvedValueOnce(createMockHttpResponse(mockVersionsResponse));
 
       const result = await resolver.getLatestVersion({
         groupId: 'org.test',
@@ -205,9 +212,9 @@ describe('MavenResolver', () => {
         }
       };
 
-      mockedAxios.get
-        .mockResolvedValueOnce({ data: mockMainResponse })
-        .mockResolvedValueOnce({ data: mockVersionsResponse });
+      mockedHttpClient.get
+        .mockResolvedValueOnce(createMockHttpResponse(mockMainResponse))
+        .mockResolvedValueOnce(createMockHttpResponse(mockVersionsResponse));
 
       const result = await resolver.getLatestVersion({
         groupId: 'org.test',
@@ -251,9 +258,9 @@ describe('MavenResolver', () => {
         }
       };
 
-      mockedAxios.get
-        .mockResolvedValueOnce({ data: mockMainResponse })
-        .mockResolvedValueOnce({ data: mockVersionsResponse });
+      mockedHttpClient.get
+        .mockResolvedValueOnce(createMockHttpResponse(mockMainResponse))
+        .mockResolvedValueOnce(createMockHttpResponse(mockVersionsResponse));
 
       const result = await resolver.getLatestVersion({
         groupId: 'org.springframework',
@@ -296,9 +303,9 @@ describe('MavenResolver', () => {
         }
       };
 
-      mockedAxios.get
-        .mockResolvedValueOnce({ data: mockMainResponse })
-        .mockResolvedValueOnce({ data: mockVersionsResponse });
+      mockedHttpClient.get
+        .mockResolvedValueOnce(createMockHttpResponse(mockMainResponse))
+        .mockResolvedValueOnce(createMockHttpResponse(mockVersionsResponse));
 
       const result = await resolver.getLatestVersion({
         groupId: 'org.test',
@@ -342,9 +349,9 @@ describe('MavenResolver', () => {
         }
       };
 
-      mockedAxios.get
-        .mockResolvedValueOnce({ data: mockMainResponse })
-        .mockResolvedValueOnce({ data: mockVersionsResponse });
+      mockedHttpClient.get
+        .mockResolvedValueOnce(createMockHttpResponse(mockMainResponse))
+        .mockResolvedValueOnce(createMockHttpResponse(mockVersionsResponse));
 
       const result = await resolver.getLatestVersion({
         groupId: 'org.test',
@@ -387,9 +394,9 @@ describe('MavenResolver', () => {
         }
       };
 
-      mockedAxios.get
-        .mockResolvedValueOnce({ data: mockMainResponse })
-        .mockResolvedValueOnce({ data: mockVersionsResponse });
+      mockedHttpClient.get
+        .mockResolvedValueOnce(createMockHttpResponse(mockMainResponse))
+        .mockResolvedValueOnce(createMockHttpResponse(mockVersionsResponse));
 
       await expect(
         resolver.getLatestVersion({ groupId: 'org.test', artifactId: 'artifact' })
@@ -432,9 +439,9 @@ describe('MavenResolver', () => {
         }
       };
 
-      mockedAxios.get
-        .mockResolvedValueOnce({ data: mockMainResponse })
-        .mockResolvedValueOnce({ data: mockVersionsResponse });
+      mockedHttpClient.get
+        .mockResolvedValueOnce(createMockHttpResponse(mockMainResponse))
+        .mockResolvedValueOnce(createMockHttpResponse(mockVersionsResponse));
 
       const result = await resolver.getLatestVersion({
         groupId: 'org.test',
@@ -477,9 +484,9 @@ describe('MavenResolver', () => {
         }
       };
 
-      mockedAxios.get
-        .mockResolvedValueOnce({ data: mockMainResponse })
-        .mockResolvedValueOnce({ data: mockVersionsResponse });
+      mockedHttpClient.get
+        .mockResolvedValueOnce(createMockHttpResponse(mockMainResponse))
+        .mockResolvedValueOnce(createMockHttpResponse(mockVersionsResponse));
 
       const result = await resolver.getLatestVersion({
         groupId: 'org.test',
@@ -494,7 +501,7 @@ describe('MavenResolver', () => {
     it('should handle network timeout', async () => {
       const timeoutError = new Error('timeout');
       (timeoutError as any).code = 'ECONNABORTED';
-      mockedAxios.get.mockRejectedValueOnce(timeoutError);
+      mockedHttpClient.get.mockRejectedValueOnce(timeoutError);
 
       await expect(
         resolver.getLatestVersion({ groupId: 'org.test', artifactId: 'artifact' })
@@ -508,7 +515,7 @@ describe('MavenResolver', () => {
           statusText: 'Internal Server Error'
         }
       };
-      mockedAxios.get.mockRejectedValueOnce(httpError);
+      mockedHttpClient.get.mockRejectedValueOnce(httpError);
 
       await expect(
         resolver.getLatestVersion({ groupId: 'org.test', artifactId: 'artifact' })
@@ -519,7 +526,7 @@ describe('MavenResolver', () => {
       const networkError = {
         request: {}
       };
-      mockedAxios.get.mockRejectedValueOnce(networkError);
+      mockedHttpClient.get.mockRejectedValueOnce(networkError);
 
       await expect(
         resolver.getLatestVersion({ groupId: 'org.test', artifactId: 'artifact' })
@@ -528,7 +535,7 @@ describe('MavenResolver', () => {
 
     it('should handle generic errors', async () => {
       const genericError = new Error('Something unexpected happened');
-      mockedAxios.get.mockRejectedValueOnce(genericError);
+      mockedHttpClient.get.mockRejectedValueOnce(genericError);
 
       await expect(
         resolver.getLatestVersion({ groupId: 'org.test', artifactId: 'artifact' })
@@ -544,7 +551,7 @@ describe('MavenResolver', () => {
         }
       };
 
-      mockedAxios.get.mockResolvedValueOnce({ data: emptyResponse });
+      mockedHttpClient.get.mockResolvedValueOnce(createMockHttpResponse(emptyResponse));
 
       await expect(
         resolver.getLatestVersion({ groupId: 'org.nonexistent', artifactId: 'artifact' })
@@ -564,7 +571,7 @@ describe('MavenResolver', () => {
         }
       };
 
-      mockedAxios.get.mockResolvedValueOnce({ data: malformedResponse });
+      mockedHttpClient.get.mockResolvedValueOnce(createMockHttpResponse(malformedResponse));
 
       await expect(
         resolver.getLatestVersion({ groupId: 'org.test', artifactId: 'artifact' })
@@ -593,26 +600,22 @@ describe('MavenResolver', () => {
         }
       };
 
-      mockedAxios.get.mockResolvedValueOnce({ data: mockResponse });
+      mockedHttpClient.get.mockResolvedValueOnce(createMockHttpResponse(mockResponse));
 
       await resolver.getLatestVersion({
         groupId: 'org.springframework',
         artifactId: 'spring-core'
       });
 
-      expect(mockedAxios.get).toHaveBeenCalledWith(
+      expect(mockedHttpClient.get).toHaveBeenCalledWith(
         'https://search.maven.org/solrsearch/select',
         {
-          params: {
+          query: {
             q: 'g:"org.springframework" AND a:"spring-core"',
             rows: 1,
             wt: 'json'
           },
-          timeout: 10000,
-          headers: {
-            'User-Agent': 'maven-version-mcp-server/1.0.0',
-            'Accept-Encoding': 'gzip'
-          }
+          timeout: 10000
         }
       );
     });
@@ -638,14 +641,14 @@ describe('MavenResolver', () => {
         }
       };
 
-      mockedAxios.get.mockResolvedValueOnce({ data: mockResponse });
+      mockedHttpClient.get.mockResolvedValueOnce(createMockHttpResponse(mockResponse));
 
       await customResolver.getLatestVersion({
         groupId: 'org.test',
         artifactId: 'artifact'
       });
 
-      expect(mockedAxios.get).toHaveBeenCalledWith(
+      expect(mockedHttpClient.get).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
           timeout: 5000
@@ -675,7 +678,7 @@ describe('MavenResolver', () => {
         }
       };
 
-      mockedAxios.get.mockResolvedValueOnce({ data: mockResponse });
+      mockedHttpClient.get.mockResolvedValueOnce(createMockHttpResponse(mockResponse));
 
       const result = await resolver.getLatestVersion({
         groupId: 'org.springframework',
@@ -691,7 +694,7 @@ describe('MavenResolver', () => {
     });
 
     it('should include excluded versions when filtering occurs', async () => {
-      mockedAxios.get.mockReset();
+      mockedHttpClient.get.mockReset();
       
       const mockMainResponse: MavenApiResponse = {
         response: {
@@ -725,9 +728,9 @@ describe('MavenResolver', () => {
         }
       };
 
-      mockedAxios.get
-        .mockResolvedValueOnce({ data: mockMainResponse })
-        .mockResolvedValueOnce({ data: mockVersionsResponse });
+      mockedHttpClient.get
+        .mockResolvedValueOnce(createMockHttpResponse(mockMainResponse))
+        .mockResolvedValueOnce(createMockHttpResponse(mockVersionsResponse));
 
       const result = await resolver.getLatestVersion({
         groupId: 'org.test',

@@ -1,4 +1,3 @@
-import axios, { AxiosResponse } from 'axios';
 import { 
   MavenApiResponse, 
   VersionInfo, 
@@ -7,6 +6,7 @@ import {
 } from '../types/maven.js';
 import { logger } from '../logging/logger.js';
 import { cacheManager } from '../cache/cache-manager.js';
+import { httpClient } from '../http/http-client.js';
 
 export class MavenResolver {
   private readonly baseUrl = 'https://search.maven.org/solrsearch/select';
@@ -14,6 +14,10 @@ export class MavenResolver {
 
   constructor(timeoutMs: number = 10000) {
     this.timeout = timeoutMs;
+  }
+
+  destroy(): void {
+    httpClient.destroy();
   }
 
   private validateInput(groupId: string, artifactId: string): void {
@@ -67,18 +71,14 @@ export class MavenResolver {
     const versionQuery = `g:"${groupId}" AND a:"${artifactId}"`;
     
     try {
-      const response: AxiosResponse<any> = await axios.get(this.baseUrl, {
-        params: {
+      const response = await httpClient.get(this.baseUrl, {
+        query: {
           q: versionQuery,
           rows: 50,
           wt: 'json',
           core: 'gav'
         },
-        timeout: this.timeout,
-        headers: {
-          'User-Agent': 'maven-version-mcp-server/1.0.0',
-          'Accept-Encoding': 'gzip'
-        }
+        timeout: this.timeout
       });
 
       const versions: string[] = [];
@@ -103,17 +103,13 @@ export class MavenResolver {
     try {
       logger.logInfo(`Querying Maven API for ${groupId}:${artifactId}`);
       
-      const response: AxiosResponse<MavenApiResponse> = await axios.get(this.baseUrl, {
-        params: {
+      const response = await httpClient.get<MavenApiResponse>(this.baseUrl, {
+        query: {
           q: query,
           rows: 1,
           wt: 'json'
         },
-        timeout: this.timeout,
-        headers: {
-          'User-Agent': 'maven-version-mcp-server/1.0.0',
-          'Accept-Encoding': 'gzip'
-        }
+        timeout: this.timeout
       });
 
       const { data } = response;

@@ -21,28 +21,45 @@ npm run build
 
 ## Usage
 
-### Starting the Server
+### Stdio Mode (Default)
+For MCP clients like Cursor:
 
 ```bash
 npm start
 ```
 
+### Remote HTTP Server Mode
+Run as a standalone network service:
+
+```bash
+# Start HTTP server on port 3001
+npm run start:http
+
+# Or with custom port
+npm run dev:http -- --port 8080
+```
+
 ### Development Mode
 
 ```bash
+# Stdio mode
 npm run dev
+
+# HTTP mode
+npm run dev:http
 ```
 
 ## Setup
 
-Add to your mcp json
+### Stdio Mode (Recommended for Cursor)
+Add to your `.cursor-settings.json`:
 ```json
 {
   "mcp": {
     "mcpServers": {
       "maven-resolver": {
         "command": "npx",
-        "args": ["maven-artifacts-mcp"],
+        "args": ["maven-artifacts-mcp", "--stdio"],
         "env": {
           "CACHE_TTL_MINUTES": "5",
           "MAVEN_API_TIMEOUT": "10000"
@@ -50,6 +67,43 @@ Add to your mcp json
       }
     }
   }
+}
+```
+
+### Remote HTTP Mode
+Start the server: `npm run start:http`, then configure:
+```json
+{
+  "mcp": {
+    "mcpServers": {
+      "maven-resolver-remote": {
+        "command": "http",
+        "args": ["http://localhost:3001/sse"],
+        "env": {
+          "CACHE_TTL_MINUTES": "5",
+          "MAVEN_API_TIMEOUT": "10000"
+        }
+      }
+    }
+  }
+}
+```
+
+**HTTP Endpoints:**
+- `GET /sse` - MCP Server-Sent Events endpoint
+- `GET /health` - Health check endpoint
+- `GET /tools` - List available MCP tools and capabilities
+
+**Example `/tools` response:**
+```bash
+curl http://localhost:3001/tools
+```
+```json
+{
+  "service": "maven-mcp-server",
+  "tools": [{"name": "latest_version", "description": "Get the latest stable version of a Maven artifact"}],
+  "features": ["Filters out pre-release versions", "In-memory caching with 5-minute TTL"],
+  "endpoints": {"health": "/health", "sse": "/sse", "tools": "/tools"}
 }
 ```
 
